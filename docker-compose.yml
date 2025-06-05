@@ -1,0 +1,29 @@
+version: "3.7"
+services:
+
+  app:
+    build:
+      context: .
+    env_file:
+      - .env-docker
+    container_name: utils_app
+    command: ["/app/docker/app.sh"]
+    ports:
+      - 9998:8000
+    depends_on:
+      - celery
+      - redis
+
+  celery:
+    build:
+      context: .
+    env_file:
+      - .env-docker
+    container_name: celery_app
+    command: ["/app/docker/celery.sh"]
+    depends_on:
+      - redis
+
+  redis:
+    image: redis:5
+    container_name: redis_app

@@ -9,6 +9,6 @@ router = APIRouter(
 
 @router.post("/send_email", response_model=EmailResponse)
 async def smtp_send_email(data: EmailSchema):
-    task = send_email.delay(data.to_email, data.subject, data.body)
+    task = send_email.delay(data.email, data.subject, data.body)
     return EmailResponse(task_id=task.id, status="task submitted")
 
