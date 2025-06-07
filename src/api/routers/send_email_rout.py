@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 from src.api.background_tasks.celery_task import send_email
-from src.api.schemas import EmailSchema, EmailResponse
+from src.api.schemas.email_schemas import EmailSchema, EmailResponse
 
 router = APIRouter(
     tags=["smtp"]

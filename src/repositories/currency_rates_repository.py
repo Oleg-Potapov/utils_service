@@ -44,13 +44,16 @@ class RatesRepository(AbstractRatesRepository):
             await self.session.rollback()
             raise HTTPException(status_code=400, detail=f"Database error: {str(e)}")
 
-    async def update_rates(self, usd: float, eur: float, eur_usd: float, bitcoin: float):
+    async def update_rates(self, usd: float, eur: float, eur_usd: float, bitcoin: float) -> Rates:
         try:
             await self.session.execute(update(Rates).values(
                 usd=usd, eur=eur, eur_usd=eur_usd, bitcoin=bitcoin,
                 created_at=datetime.now(timezone.utc))
             )
             await self.session.commit()
+            result = await self.session.execute(select(Rates))
+            rates = result.scalars().first()
+            return rates
         except SQLAlchemyError as e:
             raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
 
