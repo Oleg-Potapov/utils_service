@@ -1,45 +1,50 @@
-import requests
-from src.api.config import API_TOKEN_TB
-
-API_TOKEN = API_TOKEN_TB
+import xml.etree.ElementTree as ET
 
 
-headers = {
-    "Authorization": f"Bearer {API_TOKEN}",
-    "Content-Type": "application/json"
-}
+# async def parse_rates(xml_content: str):
+#     root = ET.fromstring(xml_content)
+#     result = {}
+#     for currency in root.findall('currency'):
+#         code = currency.find('code').text
+#         buy = currency.find('buy').text
+#         sell = currency.find('sell').text
+#         if code == 'USD':
+#             result['usd_buy'] = float(buy)
+#             result['usd_sell'] = float(sell)
+#         elif code == 'EUR':
+#             result['eur_buy'] = float(buy)
+#             result['eur_sell'] = float(sell)
+#     return result
 
-url = "https://invest-public-api.tinkoff.ru/rest/tinkoff.public.invest.api.contract.v1.MarketDataService/GetOrderBook"
 
-payload = {
-    "figi": "BBG0013HGFT4",  # FIGI USD/RUB с лотностью 1000
-    "depth": 1  # глубина стакана (1 — чтобы получить лучший bid и ask)
-}
+def parse_rates(xml_content: str):
+    root = ET.fromstring(xml_content)
+    result = {}
 
-response = requests.post(url, json=payload, headers=headers)
-data = response.json()
+    # Проходим по всем элементам <rates>
+    for rates_elem in root.findall('.//rates'):
+        from_currency = rates_elem.find('fromCurrency')
+        to_currency = rates_elem.find('toCurrency')
 
-if response.status_code == 200 and "payload" in data:
-    bids = data["payload"].get("bids", [])
-    asks = data["payload"].get("asks", [])
+        if from_currency is None or to_currency is None:
+            continue
 
-    best_bid = bids[0]["price"] if bids else None
-    best_ask = asks[0]["price"] if asks else None
+        from_code = from_currency.attrib.get('code')
+        to_code = to_currency.attrib.get('code')
 
-    def price_to_float(price):
-        return price["units"] + price["nano"] / 1e9
+        # Ищем курсы EUR->RUB и USD->RUB
+        if to_code == '643':  # Код RUB
+            if from_code == '978':  # EUR
+                buy = rates_elem.attrib.get('buy')
+                sell = rates_elem.attrib.get('sell')
+                if buy and sell:
+                    result['eur_buy'] = float(buy)
+                    result['eur_sell'] = float(sell)
+            elif from_code == '840':  # USD
+                buy = rates_elem.attrib.get('buy')
+                sell = rates_elem.attrib.get('sell')
+                if buy and sell:
+                    result['usd_buy'] = float(buy)
+                    result['usd_sell'] = float(sell)
 
-    if best_bid:
-        best_bid_price = price_to_float(best_bid)
-    else:
-        best_bid_price = None
-
-    if best_ask:
-        best_ask_price = price_to_float(best_ask)
-    else:
-        best_ask_price = None
-
-    print(f"Лучший Bid (покупка) USD/RUB: {best_bid_price}")
-    print(f"Лучший Ask (продажа) USD/RUB: {best_ask_price}")
-else:
-    print(f"Ошибка запроса: {response.status_code} {response.text}")
+    return result
