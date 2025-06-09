@@ -3,7 +3,6 @@ from src.api.scheduler.ini_scheduler import schedule_jobs, scheduler
 from src.database.session import get_async_session
 from src.repositories.currency_rates_repository import RatesRepository
 from src.services.currency_rates_service import CurrencyRatesService
-# from src.api.http_client import startup_client, shutdown_client
 
 router = APIRouter()
 

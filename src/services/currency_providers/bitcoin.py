@@ -1,11 +1,11 @@
 import requests
 from fastapi import HTTPException
+from src.api.config import BITCOIN_URL
 
 
 async def get_bitcoin_price() -> dict:
     try:
-        url = "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd"
-        response = requests.get(url)
+        response = requests.get(BITCOIN_URL)
         data = response.json()
         print(data)
         return {"bitcoin": data['bitcoin']['usd']}

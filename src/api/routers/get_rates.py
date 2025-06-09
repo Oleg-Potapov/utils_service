@@ -1,5 +1,4 @@
-from fastapi import APIRouter, Depends
-from sqlalchemy.ext.asyncio import AsyncSession
+from fastapi import APIRouter
 from src.api.schemas.rates_schemas import RatesResponse
 from src.database.session import get_async_session
 from src.repositories.currency_rates_repository import RatesRepository
