@@ -2,6 +2,7 @@ import uvicorn
 from fastapi import FastAPI
 from src.api.routers import send_email_rout, event, get_rates
 
+
 app = FastAPI()
 
 

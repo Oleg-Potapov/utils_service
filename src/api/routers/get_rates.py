@@ -1,4 +1,6 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from src.api.schemas.rates_schemas import RatesResponse
 from src.database.session import get_async_session
 from src.repositories.currency_rates_repository import RatesRepository
@@ -10,7 +12,6 @@ router = APIRouter(
 
 
 @router.get("/get_rates", response_model=RatesResponse)
-async def get_rates_data():
-    async with get_async_session() as db:
-        result = await CurrencyRatesService(RatesRepository(db)).get_data()
+async def get_rates_data(db: AsyncSession = Depends(get_async_session)):
+    result = await CurrencyRatesService(RatesRepository(db)).get_data()
     return result
